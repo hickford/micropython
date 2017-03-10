@@ -39,6 +39,7 @@
 #include "spi_flash.h"
 #include "ets_alt_task.h"
 #include "lwip/dns.h"
+#include "wpa2_enterprise.h"
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -103,14 +104,27 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         p = mp_obj_str_get_data(args[1], &len);
         memcpy(config.ssid, p, len);
-        if (n_args > 2) {
+        if (n_args == 2) {
             p = mp_obj_str_get_data(args[2], &len);
         } else {
             p = "";
+            len = 0;
         }
         memcpy(config.password, p, len);
 
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
+
+        if (n_args == 3) {
+            error_check(wifi_station_set_wpa2_enterprise_auth(1), "Cannot enable WPA2 enterprise auth");
+            p = mp_obj_str_get_data(args[2], &len);
+            error_check(wifi_station_set_enterprise_username(p, len), "Cannot set WPA2 enterprise username");
+            p = mp_obj_str_get_data(args[3], &len);
+            error_check(wifi_station_set_enterprise_password(p, len), "Cannot set WPA2 enterprise password");
+        } else {
+            error_check(wifi_station_set_wpa2_enterprise_auth(0), "Cannot disable WPA2 enterprise auth");
+            wifi_station_clear_enterprise_username();
+            wifi_station_clear_enterprise_password();
+        }
     }
     error_check(wifi_station_connect(), "Cannot connect to AP");
 

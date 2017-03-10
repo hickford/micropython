@@ -277,8 +277,10 @@ For example::
         provided. Most other methods require active interface.
 
     .. method:: wlan.connect(ssid, password)
+    .. method:: wlan.connect(ssid, username, password)
 
         Connect to the specified wireless network, using the specified password.
+        If both username and password specified, will use WPA2 Enterprise EAP-PEAP authentication.
 
     .. method:: wlan.disconnect()
 
